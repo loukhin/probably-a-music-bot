@@ -20,7 +20,7 @@ import (
 	"github.com/disgoorg/log"
 	"github.com/disgoorg/paginator"
 	"github.com/disgoorg/snowflake/v2"
-	"github.com/disgoorg/source-plugins"
+	source_plugins "github.com/disgoorg/source-plugins"
 	"github.com/getsentry/sentry-go"
 	_ "github.com/lib/pq"
 
@@ -101,7 +101,7 @@ func main() {
 		log.Fatalf("error while connecting to discord: %s", err)
 	}
 
-	log.Infof("example is now running. Press CTRL-C to exit.")
+	log.Infof("example is now running. Press CTRL and C on your keyboard together to exit.")
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-s

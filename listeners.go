@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/disgoorg/disgo/discord"
-	"github.com/disgoorg/disgo/events"
-	"github.com/disgoorg/log"
-	"github.com/disgoorg/paginator"
 	"math"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/disgoorg/disgo/discord"
+	"github.com/disgoorg/disgo/events"
+	"github.com/disgoorg/log"
+	"github.com/disgoorg/paginator"
 )
 
 func checkMusicPlayer(event *events.ApplicationCommandInteractionCreate) *MusicPlayer {
