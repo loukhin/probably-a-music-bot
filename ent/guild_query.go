@@ -4,8 +4,6 @@ package ent
 
 import (
 	"context"
-	"definitelynotmusicbot/ent/guild"
-	"definitelynotmusicbot/ent/predicate"
 	"fmt"
 	"math"
 
@@ -13,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	snowflake "github.com/disgoorg/snowflake/v2"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
+	"github.com/loukhin/probably-a-music-bot/ent/predicate"
 )
 
 // GuildQuery is the builder for querying Guild entities.

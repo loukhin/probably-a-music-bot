@@ -4,8 +4,9 @@ package hook
 
 import (
 	"context"
-	"definitelynotmusicbot/ent"
 	"fmt"
+
+	"github.com/loukhin/probably-a-music-bot/ent"
 )
 
 // The GuildFunc type is an adapter to allow the use of ordinary

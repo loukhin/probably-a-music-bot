@@ -4,8 +4,6 @@ package ent
 
 import (
 	"context"
-	"definitelynotmusicbot/ent/guild"
-	"definitelynotmusicbot/ent/predicate"
 	"errors"
 	"fmt"
 	"time"
@@ -14,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	snowflake "github.com/disgoorg/snowflake/v2"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
+	"github.com/loukhin/probably-a-music-bot/ent/predicate"
 )
 
 // GuildUpdate is the builder for updating Guild entities.

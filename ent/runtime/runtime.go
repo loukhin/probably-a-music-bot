@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in definitelynotmusicbot/ent/runtime.go
+// The schema-stitching logic is generated in github.com/loukhin/probably-a-music-bot/ent/runtime.go
 
 const (
 	Version = "v0.11.9"                                         // Version of ent codegen.

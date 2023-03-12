@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/loukhin/probably-a-music-bot/ent"
 	"os"
 	"os/signal"
 	"regexp"
@@ -15,122 +16,128 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
-	"github.com/disgoorg/disgolink/disgolink"
-	"github.com/disgoorg/disgolink/lavalink"
+	"github.com/disgoorg/disgolink/v2/disgolink"
 	"github.com/disgoorg/log"
-	"github.com/disgoorg/paginator"
 	"github.com/disgoorg/snowflake/v2"
-	source_plugins "github.com/disgoorg/source-plugins"
 	"github.com/getsentry/sentry-go"
 	_ "github.com/lib/pq"
-
-	"definitelynotmusicbot/ent"
 )
 
 var (
-	URLPattern = regexp.MustCompile("^https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]?")
+	urlPattern = regexp.MustCompile("^https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]?")
 
-	token        = os.Getenv("disgolink_token")
-	guildID      = snowflake.GetEnv("guild_id")
-	client       bot.Client
-	dgoLink      disgolink.Link
-	musicPlayers = map[snowflake.ID]*MusicPlayer{}
-	manager      *paginator.Manager
-	entClient    *ent.Client
+	Token   = os.Getenv("TOKEN")
+	GuildId = snowflake.GetEnv("GUILD_ID")
+
+	NodeName      = os.Getenv("NODE_NAME")
+	NodeAddress   = os.Getenv("NODE_ADDRESS")
+	NodePassword  = os.Getenv("NODE_PASSWORD")
+	NodeSecure, _ = strconv.ParseBool(os.Getenv("NODE_SECURE"))
+
+	SentryDsn           = os.Getenv("SENTRY_DSN")
+	SentrySampleRate, _ = strconv.ParseFloat(os.Getenv("SENTRY_SAMPLE_RATE"), 64)
 )
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetLevel(log.LevelDebug)
 	log.Info("starting music bot probably...")
+	log.Info("disgo version: ", disgo.Version)
+	log.Info("disgolink version: ", disgolink.Version)
 
 	var err error
-	err = sentry.Init(sentry.ClientOptions{
-		Dsn: os.Getenv("sentry_dsn"),
-		// Set TracesSampleRate to 1.0 to capture 100%
-		// of transactions for performance monitoring.
-		// We recommend adjusting this value in production,
-		TracesSampleRate: 1.0,
-	})
-	if err != nil {
-		log.Fatalf("Can't initialize sentry: %s", err)
-	}
-	defer sentry.Flush(2 * time.Second)
 
-	entClient, err = ent.Open("postgres", os.Getenv("database_url"))
-	if err != nil {
-		log.Fatalf("Can't initialize ent: %s", err)
+	if SentryDsn != "" {
+		err = sentry.Init(sentry.ClientOptions{
+			Dsn: SentryDsn,
+			// Set TracesSampleRate to 1.0 to capture 100%
+			// of transactions for performance monitoring.
+			// We recommend adjusting this value in production,
+			TracesSampleRate: SentrySampleRate,
+		})
+		if err != nil {
+			log.Fatalf("Can't initialize sentry: %s", err)
+		}
+		defer sentry.Flush(2 * time.Second)
 	}
-	defer entClient.Close()
 
-	manager = paginator.New()
-	client, err = disgo.New(token,
+	b := newBot()
+
+	client, err := disgo.New(Token,
 		bot.WithGatewayConfigOpts(
 			gateway.WithIntents(gateway.IntentGuilds|gateway.IntentGuildVoiceStates|gateway.IntentGuildMessages|gateway.IntentMessageContent),
 			gateway.WithPresenceOpts(gateway.WithPlayingActivity("something")),
 		),
 		bot.WithCacheConfigOpts(cache.WithCaches(cache.FlagVoiceStates, cache.FlagMessages, cache.FlagChannels, cache.FlagGuilds)),
-		bot.WithEventListeners(&events.ListenerAdapter{
-			OnApplicationCommandInteraction: onApplicationCommand,
-			OnGuildVoiceStateUpdate:         onGuildVoiceStateUpdate,
-			OnGuildJoin:                     onGuildJoin,
-			OnGuildMessageCreate:            OnGuildMessageCreate,
-		}),
-		bot.WithEventListeners(manager),
+		bot.WithEventListenerFunc(b.onApplicationCommand),
+		bot.WithEventListenerFunc(b.onVoiceStateUpdate),
+		bot.WithEventListenerFunc(b.onVoiceServerUpdate),
+		bot.WithEventListenerFunc(b.onGuildJoin),
+		bot.WithEventListenerFunc(b.onGuildMessageCreate),
+		//bot.WithEventListeners(manager),
 	)
 	if err != nil {
 		sentry.CaptureException(err)
-		log.Fatalf("error while building disgolink instance: %s", err)
+		log.Fatalf("error while building disgo instance: %s", err)
 		return
 	}
+	b.Client = client
 
+	registerCommands(client)
+
+	b.Lavalink = disgolink.New(client.ApplicationID(),
+		disgolink.WithListenerFunc(b.onPlayerPause),
+		disgolink.WithListenerFunc(b.onPlayerResume),
+		disgolink.WithListenerFunc(b.onTrackStart),
+		disgolink.WithListenerFunc(b.onTrackEnd),
+		disgolink.WithListenerFunc(b.onTrackException),
+		disgolink.WithListenerFunc(b.onTrackStuck),
+		disgolink.WithListenerFunc(b.onWebSocketClosed),
+	)
+	b.Handlers = map[string]func(event *events.ApplicationCommandInteractionCreate, data discord.SlashCommandInteractionData) error{
+		"play":        b.play,
+		"pause":       b.pause,
+		"now-playing": b.nowPlaying,
+		"stop":        b.stop,
+		"queue":       b.queue,
+		"clear-queue": b.clearQueue,
+		"repeat":      b.repeatType,
+		"shuffle":     b.shuffle,
+		"seek":        b.seek,
+		"volume":      b.volume,
+		"skip":        b.skip,
+		"disconnect":  b.disconnect,
+		"setup":       b.setup,
+		"remove":      b.removeQueue,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err = client.OpenGateway(ctx); err != nil {
+		log.Fatal(err)
+	}
 	defer client.Close(context.TODO())
+	defer func(client *ent.Client) {
+		_ = client.Close()
+	}(getEntClient())
 
-	dgoLink = disgolink.New(client)
-	registerNodes()
-
-	defer dgoLink.Close()
-
-	_, err = client.Rest().SetGuildCommands(client.ApplicationID(), guildID, commands)
+	node, err := b.Lavalink.AddNode(ctx, disgolink.NodeConfig{
+		Name:     NodeName,
+		Address:  NodeAddress,
+		Password: NodePassword,
+		Secure:   NodeSecure,
+	})
 	if err != nil {
-		log.Errorf("error while registering guild commands: %s", err)
+		log.Fatal(err)
 	}
-
-	err = client.OpenGateway(context.TODO())
+	version, err := node.Version(ctx)
 	if err != nil {
-		log.Fatalf("error while connecting to discord: %s", err)
+		log.Fatal(err)
 	}
+	log.Infof("node version: %s", version)
 
 	log.Infof("example is now running. Press CTRL and C on your keyboard together to exit.")
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-s
-}
-
-func connect(event *events.ApplicationCommandInteractionCreate, voiceState discord.VoiceState) bool {
-	if err := event.Client().UpdateVoiceState(context.TODO(), voiceState.GuildID, voiceState.ChannelID, false, true); err != nil {
-		_, _ = event.Client().Rest().UpdateInteractionResponse(event.ApplicationID(), event.Token(), discord.NewMessageUpdateBuilder().SetContent("error while connecting to channel:\n"+err.Error()).Build())
-		log.Errorf("error while connecting to channel: %s", err)
-		return false
-	}
-	return true
-}
-
-func registerNodes() {
-	secure, _ := strconv.ParseBool(os.Getenv("lavalink_secure"))
-	_, _ = dgoLink.AddNode(context.TODO(), lavalink.NodeConfig{
-		Name:        "test",
-		Host:        os.Getenv("lavalink_host"),
-		Port:        os.Getenv("lavalink_port"),
-		Password:    os.Getenv("lavalink_password"),
-		Secure:      secure,
-		ResumingKey: os.Getenv("lavalink_resuming_key"),
-	})
-	if os.Getenv("lavalink_resuming_key") != "" {
-		_ = dgoLink.BestNode().ConfigureResuming(os.Getenv("lavalink_resuming_key"), 20)
-	}
-	dgoLink.AddPlugins(
-		source_plugins.NewSpotifyPlugin(),
-		source_plugins.NewAppleMusicPlugin(),
-	)
 }

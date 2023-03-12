@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"definitelynotmusicbot/ent/guild"
 	"errors"
 	"fmt"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	snowflake "github.com/disgoorg/snowflake/v2"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
 )
 
 // GuildCreate is the builder for creating a Guild entity.

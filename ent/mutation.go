@@ -4,8 +4,6 @@ package ent
 
 import (
 	"context"
-	"definitelynotmusicbot/ent/guild"
-	"definitelynotmusicbot/ent/predicate"
 	"errors"
 	"fmt"
 	"sync"
@@ -14,6 +12,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	snowflake "github.com/disgoorg/snowflake/v2"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
+	"github.com/loukhin/probably-a-music-bot/ent/predicate"
 )
 
 const (

@@ -3,11 +3,11 @@
 package guild
 
 import (
-	"definitelynotmusicbot/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	snowflake "github.com/disgoorg/snowflake/v2"
+	"github.com/loukhin/probably-a-music-bot/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

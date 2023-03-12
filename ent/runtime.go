@@ -3,9 +3,10 @@
 package ent
 
 import (
-	"definitelynotmusicbot/ent/guild"
-	"definitelynotmusicbot/ent/schema"
 	"time"
+
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
+	"github.com/loukhin/probably-a-music-bot/ent/schema"
 )
 
 // The init function reads all schema descriptors with runtime code

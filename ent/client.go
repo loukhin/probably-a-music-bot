@@ -8,14 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"definitelynotmusicbot/ent/migrate"
-
-	"definitelynotmusicbot/ent/guild"
+	snowflake "github.com/disgoorg/snowflake/v2"
+	"github.com/loukhin/probably-a-music-bot/ent/migrate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	snowflake "github.com/disgoorg/snowflake/v2"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
 )
 
 // Client is the client that holds all ent builders.

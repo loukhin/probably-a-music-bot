@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
-	"definitelynotmusicbot/ent/guild"
-	"definitelynotmusicbot/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
+	"github.com/loukhin/probably-a-music-bot/ent/predicate"
 )
 
 // GuildDelete is the builder for deleting a Guild entity.

@@ -3,13 +3,13 @@
 package ent
 
 import (
-	"definitelynotmusicbot/ent/guild"
 	"fmt"
 	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	snowflake "github.com/disgoorg/snowflake/v2"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
 )
 
 // Guild is the model entity for the Guild schema.

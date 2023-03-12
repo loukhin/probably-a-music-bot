@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"definitelynotmusicbot/ent/guild"
 	"errors"
 	"fmt"
 	"reflect"
@@ -12,6 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
 )
 
 // ent aliases to avoid import conflicts in user's code.

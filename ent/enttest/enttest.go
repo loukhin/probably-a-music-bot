@@ -4,13 +4,13 @@ package enttest
 
 import (
 	"context"
-	"definitelynotmusicbot/ent"
-	// required by schema hooks.
-	_ "definitelynotmusicbot/ent/runtime"
 
-	"definitelynotmusicbot/ent/migrate"
+	"github.com/loukhin/probably-a-music-bot/ent"
+	// required by schema hooks.
+	_ "github.com/loukhin/probably-a-music-bot/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
+	"github.com/loukhin/probably-a-music-bot/ent/migrate"
 )
 
 type (

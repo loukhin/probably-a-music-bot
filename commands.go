@@ -1,43 +1,22 @@
 package main
 
 import (
+	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
+	"github.com/disgoorg/disgolink/v2/lavalink"
 	"github.com/disgoorg/json"
+	"github.com/disgoorg/log"
 )
-
-var minVolume, maxVolume = 0, 100
 
 var commands = []discord.ApplicationCommandCreate{
 	discord.SlashCommandCreate{
-		Name:        "pause",
-		Description: "Pauses current track",
-	},
-	discord.SlashCommandCreate{
-		Name:        "resume",
-		Description: "Resume current track",
-	},
-	discord.SlashCommandCreate{
-		Name:        "queue",
-		Description: "Show queue",
-	},
-	discord.SlashCommandCreate{
-		Name:        "clear",
-		Description: "Clear queue",
-	},
-	discord.SlashCommandCreate{
-		Name:        "remove",
-		Description: "Remove item from queue",
-		Options: []discord.ApplicationCommandOption{
-			discord.ApplicationCommandOptionInt{
-				Name:        "id",
-				Description: "ID of the track in queue command",
-				Required:    true,
-			},
-		},
+		Name:                     "setup",
+		Description:              "Setup dedicated music player channel",
+		DefaultMemberPermissions: json.NewNullablePtr(discord.PermissionAdministrator),
 	},
 	discord.SlashCommandCreate{
 		Name:        "play",
-		Description: "Queue music to play",
+		Description: "Queue tracks",
 		Options: []discord.ApplicationCommandOption{
 			discord.ApplicationCommandOptionString{
 				Name:        "query",
@@ -47,33 +26,131 @@ var commands = []discord.ApplicationCommandCreate{
 		},
 	},
 	discord.SlashCommandCreate{
-		Name:        "volume",
-		Description: "Set volume",
+		Name:        "pause",
+		Description: "Pauses the current song",
+	},
+	discord.SlashCommandCreate{
+		Name:        "now-playing",
+		Description: "Shows the current playing song",
+	},
+	discord.SlashCommandCreate{
+		Name:        "stop",
+		Description: "Stops the current song and stops the player",
+	},
+	discord.SlashCommandCreate{
+		Name:        "disconnect",
+		Description: "Disconnects the player",
+	},
+	discord.SlashCommandCreate{
+		Name:        "queue",
+		Description: "Show queue",
+	},
+	discord.SlashCommandCreate{
+		Name:        "clear-queue",
+		Description: "Clear queue",
+	},
+	discord.SlashCommandCreate{
+		Name:        "repeat",
+		Description: "Select repeat type",
 		Options: []discord.ApplicationCommandOption{
-			discord.ApplicationCommandOptionInt{
-				Name:        "level",
-				Description: "Level (0-100)",
+			discord.ApplicationCommandOptionString{
+				Name:        "mode",
+				Description: "Repeat mode",
 				Required:    true,
-				MinValue:    &minVolume,
-				MaxValue:    &maxVolume,
+				Choices: []discord.ApplicationCommandOptionChoiceString{
+					{
+						Name:  QueueTypeNoRepeat.String(),
+						Value: string(QueueTypeNoRepeat),
+					},
+					{
+						Name:  QueueTypeRepeatTrack.String(),
+						Value: string(QueueTypeRepeatTrack),
+					},
+					{
+						Name:  QueueTypeRepeatQueue.String(),
+						Value: string(QueueTypeRepeatQueue),
+					},
+				},
 			},
 		},
 	},
 	discord.SlashCommandCreate{
-		Name:        "stop",
-		Description: "Stop music player",
+		Name:        "remove",
+		Description: "Remove item from queue",
+		Options: []discord.ApplicationCommandOption{
+			discord.ApplicationCommandOptionInt{
+				Name:        "id",
+				Description: "ID of the track in queue",
+				Required:    true,
+			},
+		},
 	},
 	discord.SlashCommandCreate{
 		Name:        "skip",
-		Description: "Skip current track",
+		Description: "Skips the current song",
+		Options: []discord.ApplicationCommandOption{
+			discord.ApplicationCommandOptionInt{
+				Name:        "amount",
+				Description: "The amount of songs to skip",
+				Required:    false,
+			},
+		},
 	},
 	discord.SlashCommandCreate{
-		Name:        "loop",
-		Description: "Loop current track",
+		Name:        "volume",
+		Description: "Sets the volume of the player",
+		Options: []discord.ApplicationCommandOption{
+			discord.ApplicationCommandOptionInt{
+				Name:        "level",
+				Description: "The volume level to set",
+				Required:    true,
+				MaxValue:    json.Ptr(100),
+				MinValue:    json.Ptr(0),
+			},
+		},
 	},
 	discord.SlashCommandCreate{
-		Name:                     "setup",
-		Description:              "Setup dedicated music player channel",
-		DefaultMemberPermissions: json.NewNullablePtr(discord.PermissionAdministrator),
+		Name:        "seek",
+		Description: "Seeks to a specific position in the current song",
+		Options: []discord.ApplicationCommandOption{
+			discord.ApplicationCommandOptionInt{
+				Name:        "position",
+				Description: "The position to seek to",
+				Required:    true,
+			},
+			discord.ApplicationCommandOptionInt{
+				Name:        "unit",
+				Description: "The unit of the position",
+				Required:    false,
+				Choices: []discord.ApplicationCommandOptionChoiceInt{
+					{
+						Name:  "Milliseconds",
+						Value: int(lavalink.Millisecond),
+					},
+					{
+						Name:  "Seconds",
+						Value: int(lavalink.Second),
+					},
+					{
+						Name:  "Minutes",
+						Value: int(lavalink.Minute),
+					},
+					{
+						Name:  "Hours",
+						Value: int(lavalink.Hour),
+					},
+				},
+			},
+		},
 	},
+	discord.SlashCommandCreate{
+		Name:        "shuffle",
+		Description: "Shuffles the current queue",
+	},
+}
+
+func registerCommands(client bot.Client) {
+	if _, err := client.Rest().SetGuildCommands(client.ApplicationID(), GuildId, commands); err != nil {
+		log.Warn(err)
+	}
 }
