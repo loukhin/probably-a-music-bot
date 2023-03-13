@@ -9,15 +9,15 @@ import (
 	"github.com/disgoorg/log"
 )
 
-func (b *Bot) onPlayerPause(player disgolink.Player, event lavalink.PlayerPauseEvent) {
+func (b *Bot) onPlayerPause(_ disgolink.Player, event lavalink.PlayerPauseEvent) {
 	fmt.Printf("onPlayerPause: %v\n", event)
 }
 
-func (b *Bot) onPlayerResume(player disgolink.Player, event lavalink.PlayerResumeEvent) {
+func (b *Bot) onPlayerResume(_ disgolink.Player, event lavalink.PlayerResumeEvent) {
 	fmt.Printf("onPlayerResume: %v\n", event)
 }
 
-func (b *Bot) onTrackStart(player disgolink.Player, event lavalink.TrackStartEvent) {
+func (b *Bot) onTrackStart(_ disgolink.Player, event lavalink.TrackStartEvent) {
 	b.updatePlayerMessage(event.GuildID())
 	fmt.Printf("onTrackStart: %v\n", event)
 }
@@ -32,6 +32,7 @@ func (b *Bot) onTrackEnd(player disgolink.Player, event lavalink.TrackEndEvent) 
 		nextTrack lavalink.Track
 		ok        bool
 	)
+	event.Track.Info.Position = 0
 	switch queue.Type {
 	case QueueTypeNoRepeat:
 		nextTrack, ok = queue.Next()
@@ -55,14 +56,14 @@ func (b *Bot) onTrackEnd(player disgolink.Player, event lavalink.TrackEndEvent) 
 	}
 }
 
-func (b *Bot) onTrackException(player disgolink.Player, event lavalink.TrackExceptionEvent) {
+func (b *Bot) onTrackException(_ disgolink.Player, event lavalink.TrackExceptionEvent) {
 	fmt.Printf("onTrackException: %v\n", event)
 }
 
-func (b *Bot) onTrackStuck(player disgolink.Player, event lavalink.TrackStuckEvent) {
+func (b *Bot) onTrackStuck(_ disgolink.Player, event lavalink.TrackStuckEvent) {
 	fmt.Printf("onTrackStuck: %v\n", event)
 }
 
-func (b *Bot) onWebSocketClosed(player disgolink.Player, event lavalink.WebSocketClosedEvent) {
+func (b *Bot) onWebSocketClosed(_ disgolink.Player, event lavalink.WebSocketClosedEvent) {
 	fmt.Printf("onWebSocketClosed: %v\n", event)
 }
