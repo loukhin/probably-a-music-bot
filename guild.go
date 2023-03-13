@@ -60,3 +60,11 @@ func (gm *GuildManager) GetGuildPlayer(guildID snowflake.ID) *GuildPlayer {
 func (gm *GuildManager) Delete(guildID snowflake.ID) {
 	delete(gm.guilds, guildID)
 }
+
+func (gp *GuildPlayer) IsPlayerChannel(channelID snowflake.ID) bool {
+	return gp.channelID != nil && gp.channelID.String() == channelID.String()
+}
+
+func (gp *GuildPlayer) IsPlayerMessage(messageID snowflake.ID) bool {
+	return gp.messageID != nil && gp.messageID.String() == messageID.String()
+}

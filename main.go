@@ -98,6 +98,7 @@ func main() {
 		bot.WithEventListenerFunc(b.onVoiceServerUpdate),
 		bot.WithEventListenerFunc(b.onGuildJoin),
 		bot.WithEventListenerFunc(b.onGuildMessageCreate),
+		bot.WithEventListenerFunc(b.onGuildMessageUpdate),
 		//bot.WithEventListeners(manager),
 	)
 	if err != nil {

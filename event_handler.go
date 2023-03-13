@@ -47,15 +47,17 @@ func (b *Bot) onGuildJoin(event *events.GuildJoin) {
 
 func (b *Bot) onGuildMessageCreate(event *events.GuildMessageCreate) {
 	guildPlayer := b.Guilds.GetGuildPlayer(event.GuildID)
-	if guildPlayer.channelId.String() == event.ChannelID.String() {
-		go func() {
-			time.Sleep(5 * time.Second)
-			_ = event.Client().Rest().DeleteMessage(event.ChannelID, event.MessageID)
-		}()
+	if guildPlayer.IsPlayerChannel(event.ChannelID) {
+		if !guildPlayer.IsPlayerMessage(event.MessageID) {
+			go func() {
+				time.Sleep(5 * time.Second)
+				_ = event.Client().Rest().DeleteMessage(event.ChannelID, event.MessageID)
+			}()
+		}
 		if event.Message.Author.Bot {
 			return
 		}
-		if guildPlayer.messageId != nil {
+		if guildPlayer.messageID != nil {
 			b.playOrQueue(event.GuildID, *event.Message.Member, event.Message.Content, func(embed discord.Embed) {
 				messageCreate := discord.NewMessageCreateBuilder()
 				messageCreate.SetMessageReference(event.Message.MessageReference)
@@ -66,6 +68,31 @@ func (b *Bot) onGuildMessageCreate(event *events.GuildMessageCreate) {
 				}
 				b.updatePlayerMessage(event.GuildID)
 			})
+		}
+	}
+}
+
+func (b *Bot) onGuildMessageUpdate(event *events.GuildMessageUpdate) {
+	guildPlayer := b.Guilds.GetGuildPlayer(event.GuildID)
+	newMessageEmbed := event.Message.Embeds
+	if guildPlayer.IsPlayerChannel(event.ChannelID) && guildPlayer.IsPlayerMessage(event.MessageID) && len(newMessageEmbed) == 0 {
+		guild, err := b.EntClient.Guild.Get(context.TODO(), event.GuildID)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		_, err = guild.Update().ClearPlayerChannelID().ClearPlayerMessageID().Save(context.TODO())
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		err = event.Client().Rest().DeleteMessage(event.ChannelID, event.MessageID)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		if ok := b.createPlayerMessage(event.GuildID, event.ChannelID); ok {
+			b.updatePlayerMessage(event.GuildID)
 		}
 	}
 }
