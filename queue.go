@@ -34,9 +34,6 @@ func (q QueueType) String() string {
 }
 
 type Queue struct {
-	bot     *Bot
-	guildId snowflake.ID
-
 	Length lavalink.Duration
 	Tracks []lavalink.Track
 	Type   QueueType
@@ -53,13 +50,11 @@ func (q *Queue) Shuffle() {
 	rand.Shuffle(len(q.Tracks), func(i, j int) {
 		q.Tracks[i], q.Tracks[j] = q.Tracks[j], q.Tracks[i]
 	})
-	q.bot.updatePlayerMessage(q.guildId)
 }
 
 func (q *Queue) Add(tracks ...lavalink.Track) {
 	q.Tracks = append(q.Tracks, tracks...)
 	q.RecalculateDuration()
-	q.bot.updatePlayerMessage(q.guildId)
 }
 
 func (q *Queue) Next() (lavalink.Track, bool) {
@@ -75,6 +70,7 @@ func (q *Queue) Skip(amount int) (lavalink.Track, bool) {
 	}
 	var skippedTrack lavalink.Track
 	skippedTrack, q.Tracks = q.Tracks[amount-1], q.Tracks[amount:]
+	q.RecalculateDuration()
 	return skippedTrack, true
 }
 
@@ -85,12 +81,10 @@ func (q *Queue) Remove(index int) (removedTrack lavalink.Track, ok bool) {
 	removedTrack = q.Tracks[index]
 	q.Tracks = append(q.Tracks[:index], q.Tracks[index+1:]...)
 	q.RecalculateDuration()
-	q.bot.updatePlayerMessage(q.guildId)
 	return removedTrack, true
 }
 
 func (q *Queue) Clear() {
 	q.Tracks = make([]lavalink.Track, 0)
 	q.Length = 0
-	q.bot.updatePlayerMessage(q.guildId)
 }

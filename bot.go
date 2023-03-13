@@ -41,12 +41,12 @@ func (b *Bot) updateVoiceState(guildID snowflake.ID, channelID *snowflake.ID) bo
 	return true
 }
 
-func (b *Bot) updatePlayerMessage(guildId snowflake.ID) {
-	guildPlayer := b.Guilds.GetGuildPlayer(guildId)
-	if guildPlayer.channelId == nil || guildPlayer.messageId == nil {
+func (b *Bot) updatePlayerMessage(guildID snowflake.ID) {
+	guildPlayer := b.Guilds.GetGuildPlayer(guildID)
+	if guildPlayer.channelID == nil || guildPlayer.messageID == nil {
 		return
 	}
-	playerMessage, err := b.Client.Rest().GetMessage(*guildPlayer.channelId, *guildPlayer.messageId)
+	playerMessage, err := b.Client.Rest().GetMessage(*guildPlayer.channelID, *guildPlayer.messageID)
 	if err != nil || playerMessage == nil {
 		log.Debug(err)
 		return
@@ -60,7 +60,7 @@ func (b *Bot) updatePlayerMessage(guildId snowflake.ID) {
 		loopStatus              discord.EmbedFooter
 	)
 	isInline := true
-	queue := b.Guilds.GetQueue(guildId)
+	queue := b.Guilds.GetQueue(guildID)
 	queueLength := len(queue.Tracks)
 	queueEmbed.SetTitlef("Queue list (%d)", queueLength)
 	if queueLength == 0 {
@@ -80,7 +80,8 @@ func (b *Bot) updatePlayerMessage(guildId snowflake.ID) {
 	}
 	queueEmbed.SetDescription(description)
 
-	playingTrack := b.Lavalink.Player(guildId).Track()
+	player := b.Lavalink.Player(guildID)
+	playingTrack := player.Track()
 	if playingTrack != nil {
 		playerEmbed.SetTitle(playingTrack.Info.Title)
 		playerEmbed.SetURL(*playingTrack.Info.URI)

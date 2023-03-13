@@ -9,8 +9,8 @@ import (
 )
 
 type GuildPlayer struct {
-	channelId *snowflake.ID
-	messageId *snowflake.ID
+	channelID *snowflake.ID
+	messageID *snowflake.ID
 }
 
 type Guild struct {
@@ -27,18 +27,16 @@ func (gm *GuildManager) Get(guildID snowflake.ID) *Guild {
 	guild, ok := gm.guilds[guildID]
 	if !ok {
 		queue := &Queue{
-			bot:     gm.bot,
-			guildId: GuildId,
-			Tracks:  make([]lavalink.Track, 0),
-			Type:    QueueTypeNoRepeat,
+			Tracks: make([]lavalink.Track, 0),
+			Type:   QueueTypeNoRepeat,
 		}
 		dbGuild, err := gm.bot.EntClient.Guild.Get(context.TODO(), guildID)
 		if err != nil {
 			log.Error(err)
 		}
 		guildPlayer := &GuildPlayer{
-			channelId: dbGuild.PlayerChannelID,
-			messageId: dbGuild.PlayerMessageID,
+			channelID: dbGuild.PlayerChannelID,
+			messageID: dbGuild.PlayerMessageID,
 		}
 		gm.guilds[guildID] = &Guild{
 			queue:       queue,
