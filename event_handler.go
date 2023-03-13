@@ -64,6 +64,7 @@ func (b *Bot) onGuildMessageCreate(event *events.GuildMessageCreate) {
 				if err != nil {
 					log.Error(err)
 				}
+				b.updatePlayerMessage(event.GuildID)
 			})
 		}
 	}

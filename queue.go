@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/disgoorg/disgolink/v2/lavalink"
-	"github.com/disgoorg/snowflake/v2"
 )
 
 func init() {

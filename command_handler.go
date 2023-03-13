@@ -16,6 +16,7 @@ func (b *Bot) shuffle(event *events.ApplicationCommandInteractionCreate, _ disco
 	}
 
 	queue.Shuffle()
+	b.updatePlayerMessage(*event.GuildID())
 	return updateInteractionResponse(event, "Queue shuffled")
 }
 
@@ -73,6 +74,7 @@ func (b *Bot) skip(event *events.ApplicationCommandInteractionCreate, data disco
 		return updateInteractionResponse(event, fmt.Sprintf("Error while skipping track: `%s`", err))
 	}
 
+	b.updatePlayerMessage(*event.GuildID())
 	return updateInteractionResponse(event, "Skipped track")
 }
 
@@ -95,6 +97,7 @@ func (b *Bot) clearQueue(event *events.ApplicationCommandInteractionCreate, _ di
 	}
 
 	queue.Clear()
+	b.updatePlayerMessage(*event.GuildID())
 	return updateInteractionResponse(event, "Queue cleared")
 }
 
@@ -108,6 +111,7 @@ func (b *Bot) removeQueue(event *events.ApplicationCommandInteractionCreate, dat
 	if !ok {
 		return updateInteractionResponse(event, "Can't remove track")
 	}
+	b.updatePlayerMessage(*event.GuildID())
 	return updateInteractionResponse(event, fmt.Sprintf("Removed [%s](%s)", removedTrack.Info.Title, *removedTrack.Info.URI))
 }
 
@@ -143,6 +147,7 @@ func (b *Bot) pause(event *events.ApplicationCommandInteractionCreate, _ discord
 	if player.Paused() {
 		status = "paused"
 	}
+	b.updatePlayerMessage(*event.GuildID())
 	return updateInteractionResponse(event, fmt.Sprintf("Player is now %s", status))
 }
 
@@ -156,6 +161,7 @@ func (b *Bot) stop(event *events.ApplicationCommandInteractionCreate, _ discord.
 		return updateInteractionResponse(event, fmt.Sprintf("Error while stopping: `%s`", err))
 	}
 
+	b.updatePlayerMessage(*event.GuildID())
 	return updateInteractionResponse(event, "Player stopped")
 }
 
@@ -169,6 +175,7 @@ func (b *Bot) disconnect(event *events.ApplicationCommandInteractionCreate, _ di
 		return updateInteractionResponse(event, "Error while disconnecting")
 	}
 
+	b.updatePlayerMessage(*event.GuildID())
 	return updateInteractionResponse(event, "Player disconnected")
 }
 
@@ -192,6 +199,7 @@ func (b *Bot) play(event *events.ApplicationCommandInteractionCreate, data disco
 	var err error
 	b.playOrQueue(*event.GuildID(), event.Member().Member, query, func(embed discord.Embed) {
 		_, err = event.Client().Rest().UpdateInteractionResponse(event.ApplicationID(), event.Token(), discord.NewMessageUpdateBuilder().SetEmbeds(embed).Build())
+		b.updatePlayerMessage(*event.GuildID())
 	})
 	return err
 }
