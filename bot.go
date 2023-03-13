@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/loukhin/probably-a-music-bot/ent"
+
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
@@ -24,10 +26,11 @@ func newBot() *Bot {
 }
 
 type Bot struct {
-	Client   bot.Client
-	Lavalink disgolink.Client
-	Handlers map[string]func(event *events.ApplicationCommandInteractionCreate, data discord.SlashCommandInteractionData) error
-	Guilds   *GuildManager
+	Client    bot.Client
+	EntClient *ent.Client
+	Guilds    *GuildManager
+	Handlers  map[string]func(event *events.ApplicationCommandInteractionCreate, data discord.SlashCommandInteractionData) error
+	Lavalink  disgolink.Client
 }
 
 func (b *Bot) updateVoiceState(guildID snowflake.ID, channelID *snowflake.ID) bool {

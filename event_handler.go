@@ -39,7 +39,7 @@ func (b *Bot) onVoiceServerUpdate(event *events.VoiceServerUpdate) {
 }
 
 func (b *Bot) onGuildJoin(event *events.GuildJoin) {
-	err := getEntClient().Guild.Create().SetID(event.GuildID).SetName(event.Guild.Name).OnConflictColumns("id").UpdateNewValues().Exec(context.Background())
+	err := b.EntClient.Guild.Create().SetID(event.GuildID).SetName(event.Guild.Name).OnConflictColumns("id").UpdateNewValues().Exec(context.Background())
 	if err != nil {
 		log.Error(err)
 	}

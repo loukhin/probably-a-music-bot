@@ -32,8 +32,7 @@ func (gm *GuildManager) Get(guildID snowflake.ID) *Guild {
 			Tracks:  make([]lavalink.Track, 0),
 			Type:    QueueTypeNoRepeat,
 		}
-		entClient := getEntClient()
-		dbGuild, err := entClient.Guild.Get(context.TODO(), guildID)
+		dbGuild, err := gm.bot.EntClient.Guild.Get(context.TODO(), guildID)
 		if err != nil {
 			log.Error(err)
 		}

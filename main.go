@@ -63,6 +63,26 @@ func main() {
 
 	b := newBot()
 
+	entClient, err := ent.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatalf("Can't initialize ent: %s", err)
+		return
+	}
+	err = entClient.Ping()
+	if err != nil {
+		log.Fatalf("Can't initialize database connection: %s", err)
+		return
+	}
+	if os.Args[1] == "--migrate" {
+		log.Info("--migrate flag present, migrating database changes...")
+		err = migrateDatabase(entClient)
+		if err != nil {
+			log.Fatalf("failed creating schema resources: %v", err)
+			return
+		}
+	}
+	b.EntClient = entClient
+
 	client, err := disgo.New(Token,
 		bot.WithGatewayConfigOpts(
 			gateway.WithIntents(gateway.IntentGuilds|gateway.IntentGuildVoiceStates|gateway.IntentGuildMessages|gateway.IntentMessageContent),
@@ -119,7 +139,7 @@ func main() {
 	defer client.Close(context.TODO())
 	defer func(client *ent.Client) {
 		_ = client.Close()
-	}(getEntClient())
+	}(b.EntClient)
 
 	node, err := b.Lavalink.AddNode(ctx, disgolink.NodeConfig{
 		Name:     NodeName,
