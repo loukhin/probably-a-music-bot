@@ -83,7 +83,11 @@ func (b *Bot) updatePlayerMessage(guildID snowflake.ID) {
 	player := b.Lavalink.Player(guildID)
 	playingTrack := player.Track()
 	if playingTrack != nil {
-		playerEmbed.SetTitle(playingTrack.Info.Title)
+		playStatus := "▶️"
+		if player.Paused() {
+			playStatus = "⏸️"
+		}
+		playerEmbed.SetTitlef("%s %s", playStatus, playingTrack.Info.Title)
 		playerEmbed.SetURL(*playingTrack.Info.URI)
 		if playingTrack.Info.ArtworkURL != nil {
 			playerEmbed.SetImage(*playingTrack.Info.ArtworkURL)
