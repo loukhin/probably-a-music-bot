@@ -150,7 +150,13 @@ var commands = []discord.ApplicationCommandCreate{
 }
 
 func registerCommands(client bot.Client) {
-	if _, err := client.Rest().SetGuildCommands(client.ApplicationID(), GuildId, commands); err != nil {
-		log.Warn(err)
+	if Debug {
+		if _, err := client.Rest().SetGuildCommands(client.ApplicationID(), GuildId, commands); err != nil {
+			log.Warn(err)
+		}
+	} else {
+		if _, err := client.Rest().SetGlobalCommands(client.ApplicationID(), commands); err != nil {
+			log.Error(err)
+		}
 	}
 }

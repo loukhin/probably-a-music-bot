@@ -26,6 +26,8 @@ import (
 var (
 	urlPattern = regexp.MustCompile("^https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]?")
 
+	Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+
 	Token   = os.Getenv("TOKEN")
 	GuildId = snowflake.GetEnv("GUILD_ID")
 
@@ -40,8 +42,10 @@ var (
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.SetLevel(log.LevelDebug)
-	log.Info("starting music bot probably...")
+	log.SetLevel(log.LevelInfo)
+	if Debug {
+		log.SetLevel(log.LevelDebug)
+	}
 	log.Info("disgo version: ", disgo.Version)
 	log.Info("disgolink version: ", disgolink.Version)
 
