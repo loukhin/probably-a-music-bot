@@ -7,7 +7,6 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgolink/v2/lavalink"
-	"github.com/disgoorg/log"
 )
 
 func (b *Bot) shuffle(event *events.ApplicationCommandInteractionCreate, _ discord.SlashCommandInteractionData) error {
@@ -198,29 +197,8 @@ func (b *Bot) play(event *events.ApplicationCommandInteractionCreate, data disco
 }
 
 func (b *Bot) setup(event *events.ApplicationCommandInteractionCreate, _ discord.SlashCommandInteractionData) error {
-	var (
-		message *discord.Message
-		embed   discord.EmbedBuilder
-	)
-
-	guild, err := getEntClient().Guild.Get(context.TODO(), *event.GuildID())
-	if err != nil {
-		return err
-	}
-
-	if guild.PlayerChannelID == nil || *guild.PlayerChannelID != event.ChannelID() {
-		embed.SetTitle("Nothing currently playing")
-		embed.SetImage("https://images.pexels.com/videos/3045163/free-video-3045163.jpg?auto=compress&cs=tinysrgb&dpr=1")
-		message, err = b.Client.Rest().CreateMessage(event.ChannelID(), discord.NewMessageCreateBuilder().SetEmbeds(embed.Build()).SetContent("Join a voice channel and queue songs by name or url in here.").Build())
-		if err != nil {
-			log.Error(err)
-		}
-		guild, err = guild.Update().SetPlayerChannelID(event.ChannelID()).SetPlayerMessageID(message.ID).Save(context.TODO())
-		if err != nil {
-			log.Error(err)
-		}
+	if ok := b.createPlayerMessage(*event.GuildID(), event.ChannelID()); ok {
 		return updateInteractionResponse(event, "Player created")
-	} else {
-		return updateInteractionResponse(event, "This channel was already a player!")
 	}
+	return updateInteractionResponse(event, "This channel was already a player!")
 }

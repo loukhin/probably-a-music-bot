@@ -189,6 +189,32 @@ func (b *Bot) playOrQueue(guildID snowflake.ID, user discord.Member, query strin
 	responseFunc(embed.Build())
 }
 
+func (b *Bot) createPlayerMessage(guildID snowflake.ID, channelID snowflake.ID) bool {
+	guild, err := b.EntClient.Guild.Get(context.TODO(), guildID)
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if guild.PlayerChannelID == nil || *guild.PlayerChannelID != channelID {
+		var message *discord.Message
+		guildPlayer := b.Guilds.GetGuildPlayer(guildID)
+		message, err = b.Client.Rest().CreateMessage(channelID, discord.NewMessageCreateBuilder().SetContent("Join a voice channel and queue songs by name or url in here.").Build())
+		if err != nil {
+			log.Error(err)
+		}
+		guild, err = guild.Update().SetPlayerChannelID(channelID).SetPlayerMessageID(message.ID).Save(context.TODO())
+		if err != nil {
+			log.Error(err)
+		}
+		guildPlayer.channelID = guild.PlayerChannelID
+		guildPlayer.messageID = guild.PlayerMessageID
+		b.updatePlayerMessage(guildID)
+		return true
+	}
+	return false
+}
+
 func formatDuration(duration lavalink.Duration) string {
 	return fmt.Sprintf("%02d:%02d:%02d", duration.Hours(), duration.MinutesPart(), duration.SecondsPart())
 }
