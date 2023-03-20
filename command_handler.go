@@ -26,7 +26,7 @@ func (b *Bot) volume(event *events.ApplicationCommandInteractionCreate, data dis
 		return updateInteractionResponse(event, "No player found")
 	}
 
-	volume := data.Int("volume")
+	volume := data.Int("level")
 	if err := player.Update(context.TODO(), lavalink.WithVolume(volume)); err != nil {
 		return updateInteractionResponse(event, fmt.Sprintf("Error while setting volume: `%s`", err))
 	}
