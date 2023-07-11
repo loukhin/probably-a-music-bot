@@ -70,13 +70,13 @@ func (b *Bot) updatePlayerMessage(guildID snowflake.ID) {
 		queueDuration.Value = formatDuration(queue.Length)
 		queueDuration.Inline = &isInline
 		queueEmbed.SetFields(queueDuration)
-		if queueLength > 10 {
-			description = fmt.Sprintf("**and other %d tracks...**\n", queueLength-10)
-		}
 	}
-	for i := min(9, queueLength-1); i >= 0; i-- {
+	for i := 0; i < min(10, queueLength-1); i++ {
 		track := queue.Tracks[i]
 		description += fmt.Sprintf("%d. [%s](%s) `%s`\n", i+1, track.Info.Title, *track.Info.URI, formatDuration(track.Info.Length))
+	}
+	if queueLength > 10 {
+		description += fmt.Sprintf("**and other %d tracks...**\n", queueLength-10)
 	}
 	queueEmbed.SetDescription(description)
 
@@ -103,7 +103,7 @@ func (b *Bot) updatePlayerMessage(guildID snowflake.ID) {
 	playerEmbed.SetEmbedFooter(&loopStatus)
 
 	messageUpdate.SetContent("Join a voice channel and queue songs by name or url in here.")
-	messageUpdate.SetEmbeds(queueEmbed.Build(), playerEmbed.Build())
+	messageUpdate.SetEmbeds(playerEmbed.Build(), queueEmbed.Build())
 
 	_, err = b.Client.Rest().UpdateMessage(playerMessage.ChannelID, playerMessage.ID, messageUpdate.Build())
 	if err != nil {
