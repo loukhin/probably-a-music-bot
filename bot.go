@@ -71,7 +71,7 @@ func (b *Bot) updatePlayerMessage(guildID snowflake.ID) {
 		queueDuration.Inline = &isInline
 		queueEmbed.SetFields(queueDuration)
 	}
-	for i := 0; i < min(10, queueLength-1); i++ {
+	for i := 0; i < min(10, queueLength); i++ {
 		track := queue.Tracks[i]
 		description += fmt.Sprintf("%d. [%s](%s) `%s`\n", i+1, track.Info.Title, *track.Info.URI, formatDuration(track.Info.Length))
 	}
