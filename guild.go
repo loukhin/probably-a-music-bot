@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/disgoorg/disgolink/v2/lavalink"
+	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/log"
 	"github.com/disgoorg/snowflake/v2"
 )

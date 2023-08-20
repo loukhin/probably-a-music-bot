@@ -6,7 +6,7 @@ import (
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
-	"github.com/disgoorg/disgolink/v2/lavalink"
+	"github.com/disgoorg/disgolink/v3/lavalink"
 )
 
 func (b *Bot) shuffle(event *events.ApplicationCommandInteractionCreate, _ discord.SlashCommandInteractionData) error {

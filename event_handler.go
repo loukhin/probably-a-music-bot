@@ -26,11 +26,24 @@ func (b *Bot) onApplicationCommand(event *events.ApplicationCommandInteractionCr
 
 func (b *Bot) onVoiceStateUpdate(event *events.GuildVoiceStateUpdate) {
 	if event.VoiceState.UserID != b.Client.ApplicationID() {
+		botVoiceState, ok := b.Client.Caches().VoiceState(event.VoiceState.GuildID, b.Client.ID())
+		if !ok || botVoiceState.ChannelID != event.VoiceState.ChannelID {
+			return
+		}
+		audioChannel, ok := b.Client.Caches().GuildAudioChannel(*botVoiceState.ChannelID)
+		if !ok {
+			return
+		}
+		members := b.Client.Caches().AudioChannelMembers(audioChannel)
+		if len(members) == 1 {
+			b.updateVoiceState(event.VoiceState.GuildID, nil)
+		}
 		return
 	}
 	b.Lavalink.OnVoiceStateUpdate(context.TODO(), event.VoiceState.GuildID, event.VoiceState.ChannelID, event.VoiceState.SessionID)
 	if event.VoiceState.ChannelID == nil {
 		b.Guilds.Delete(event.VoiceState.GuildID)
+		b.updatePlayerMessage(event.VoiceState.GuildID)
 	}
 }
 

@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
-	"github.com/disgoorg/disgolink/v2/lavalink"
+	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/json"
 	"github.com/disgoorg/log"
 )

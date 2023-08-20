@@ -10,8 +10,8 @@ import (
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
-	"github.com/disgoorg/disgolink/v2/disgolink"
-	"github.com/disgoorg/disgolink/v2/lavalink"
+	"github.com/disgoorg/disgolink/v3/disgolink"
+	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/log"
 	"github.com/disgoorg/snowflake/v2"
 )
@@ -142,11 +142,15 @@ func (b *Bot) playOrQueue(guildID snowflake.ID, user discord.Member, query strin
 	if err != nil {
 		log.Error(err)
 	}
-	tracks := loadResult.Tracks
+	tracks := loadResult.Data
 
 	switch loadResult.LoadType {
-	case lavalink.LoadTypeTrackLoaded, lavalink.LoadTypeSearchResult:
-		track := tracks[0]
+	case lavalink.LoadTypeTrack, lavalink.LoadTypeSearch:
+		var track lavalink.Track
+		track = tracks.(lavalink.Track)
+		if tracks, ok := tracks.(lavalink.Search); ok {
+			track = tracks[0]
+		}
 		if player.Track() == nil {
 			message := fmt.Sprintf("▶ Playing [%s](%s) `%s`", track.Info.Title, *track.Info.URI, formatDuration(track.Info.Length))
 			embed.SetDescription(message)
@@ -155,25 +159,27 @@ func (b *Bot) playOrQueue(guildID snowflake.ID, user discord.Member, query strin
 			embed.SetDescription(message)
 		}
 		queue.Add(track)
-	case lavalink.LoadTypePlaylistLoaded:
+	case lavalink.LoadTypePlaylist:
 		var playlistLength lavalink.Duration
+		playlists := tracks.(lavalink.Playlist)
+		tracks := playlists.Tracks
 		for _, track := range tracks {
 			playlistLength += track.Info.Length
 		}
 		if player.Track() == nil {
-			message := fmt.Sprintf("▶ Playing %d tracks from [%s](%s) playlist `%s`", len(tracks), loadResult.PlaylistInfo.Name, query, formatDuration(playlistLength))
+			message := fmt.Sprintf("▶ Playing %d tracks from [%s](%s) playlist `%s`", len(tracks), playlists.Info.Name, query, formatDuration(playlistLength))
 			embed.SetDescription(message)
 		} else {
-			message := fmt.Sprintf("Queued %d tracks from [%s](%s) playlist `%s`", len(tracks), loadResult.PlaylistInfo.Name, query, formatDuration(playlistLength))
+			message := fmt.Sprintf("Queued %d tracks from [%s](%s) playlist `%s`", len(tracks), playlists.Info.Name, query, formatDuration(playlistLength))
 			embed.SetDescription(message)
 		}
 		queue.Add(tracks...)
-	case lavalink.LoadTypeNoMatches:
+	case lavalink.LoadTypeEmpty:
 		embed.SetDescription("No tracks found")
 		responseFunc(embed.Build())
 		return
-	case lavalink.LoadTypeLoadFailed:
-		embed.SetDescription("error while loading track:\n" + loadResult.Exception.Error())
+	case lavalink.LoadTypeError:
+		embed.SetDescription("error while loading track:\n" + err.Error())
 		responseFunc(embed.Build())
 		return
 	}

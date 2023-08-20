@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/loukhin/probably-a-music-bot/ent"
 	"os"
 	"os/signal"
 	"regexp"
@@ -10,13 +9,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/loukhin/probably-a-music-bot/ent"
+
 	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/cache"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
-	"github.com/disgoorg/disgolink/v2/disgolink"
+	"github.com/disgoorg/disgolink/v3/disgolink"
 	"github.com/disgoorg/log"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/getsentry/sentry-go"
