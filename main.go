@@ -37,6 +37,8 @@ var (
 	NodePassword  = os.Getenv("NODE_PASSWORD")
 	NodeSecure, _ = strconv.ParseBool(os.Getenv("NODE_SECURE"))
 
+	DatabaseConnectionString = os.Getenv("DATABASE_URL")
+
 	SentryDsn           = os.Getenv("SENTRY_DSN")
 	SentrySampleRate, _ = strconv.ParseFloat(os.Getenv("SENTRY_SAMPLE_RATE"), 64)
 )
@@ -68,7 +70,7 @@ func main() {
 
 	b := newBot()
 
-	entClient, err := ent.Open("postgres", os.Getenv("DATABASE_URL"))
+	entClient, err := ent.Open("postgres", DatabaseConnectionString)
 	if err != nil {
 		log.Fatalf("Can't initialize ent: %s", err)
 		return
@@ -78,7 +80,7 @@ func main() {
 		log.Fatalf("Can't initialize database connection: %s", err)
 		return
 	}
-	if os.Args[1] == "--migrate" {
+	if len(os.Args) >= 2 && os.Args[1] == "--migrate" {
 		log.Info("--migrate flag present, migrating database changes...")
 		err = migrateDatabase(entClient)
 		if err != nil {

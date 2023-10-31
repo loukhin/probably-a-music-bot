@@ -133,7 +133,7 @@ func (b *Bot) playOrQueue(guildID snowflake.ID, user discord.Member, query strin
 
 	queue := b.Guilds.GetQueue(guildID)
 	player := b.Lavalink.Player(guildID)
-	_ = player.Update(context.TODO(), lavalink.WithVolume(30))
+	_ = player.Update(context.TODO(), lavalink.WithVolume(40))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -147,9 +147,10 @@ func (b *Bot) playOrQueue(guildID snowflake.ID, user discord.Member, query strin
 	switch loadResult.LoadType {
 	case lavalink.LoadTypeTrack, lavalink.LoadTypeSearch:
 		var track lavalink.Track
-		track = tracks.(lavalink.Track)
-		if tracks, ok := tracks.(lavalink.Search); ok {
-			track = tracks[0]
+		if searchResult, ok := tracks.(lavalink.Search); ok {
+			track = searchResult[0]
+		} else {
+			track = tracks.(lavalink.Track)
 		}
 		if player.Track() == nil {
 			message := fmt.Sprintf("▶ Playing [%s](%s) `%s`", track.Info.Title, *track.Info.URI, formatDuration(track.Info.Length))
