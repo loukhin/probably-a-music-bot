@@ -4,9 +4,11 @@ import (
 	"context"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/log"
+	"github.com/loukhin/probably-a-music-bot/ent/guild"
 )
 
 func (b *Bot) onApplicationCommand(event *events.ApplicationCommandInteractionCreate) {
@@ -52,7 +54,15 @@ func (b *Bot) onVoiceServerUpdate(event *events.VoiceServerUpdate) {
 }
 
 func (b *Bot) onGuildJoin(event *events.GuildJoin) {
-	err := b.EntClient.Guild.Create().SetID(event.GuildID).SetName(event.Guild.Name).OnConflictColumns("id").UpdatePlayerChannelID().UpdatePlayerMessageID().Exec(context.Background())
+	err := b.EntClient.Guild.Create().SetID(event.GuildID).SetName(event.Guild.Name).
+		OnConflict(
+			sql.ConflictColumns("id"),
+			sql.ResolveWithNewValues(),
+			sql.ResolveWith(func(u *sql.UpdateSet) {
+				u.SetIgnore(guild.FieldID)
+				u.SetIgnore(guild.FieldCreatedAt)
+			}),
+		).Exec(context.Background())
 	if err != nil {
 		log.Error(err)
 	}
