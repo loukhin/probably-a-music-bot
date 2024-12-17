@@ -137,6 +137,7 @@ func main() {
 		"disconnect":  b.disconnect,
 		"setup":       b.setup,
 		"remove":      b.removeQueue,
+		"tts":         b.tts,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

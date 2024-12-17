@@ -30,6 +30,17 @@ var commands = []discord.ApplicationCommandCreate{
 		Description: "Pauses the current song",
 	},
 	discord.SlashCommandCreate{
+		Name:        "tts",
+		Description: "Make TTS vocie",
+		Options: []discord.ApplicationCommandOption{
+			discord.ApplicationCommandOptionString{
+				Name:        "text",
+				Description: "Text for TTS to speak",
+				Required:    true,
+			},
+		},
+	},
+	discord.SlashCommandCreate{
 		Name:        "now-playing",
 		Description: "Shows the current playing song",
 	},

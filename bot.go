@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/loukhin/probably-a-music-bot/ent"
@@ -184,6 +185,62 @@ func (b *Bot) playOrQueue(guildID snowflake.ID, user discord.Member, query strin
 		responseFunc(embed.Build())
 		return
 	}
+
+	if player.Track() == nil {
+		if track, ok := queue.Next(); ok {
+			if ok := b.updateVoiceState(guildID, voiceState.ChannelID); !ok {
+				log.Info("not ok")
+				return
+			}
+			err := player.Update(context.TODO(), lavalink.WithTrack(track))
+			if err != nil {
+				log.Error(err)
+			}
+		}
+	}
+	responseFunc(embed.Build())
+}
+
+func (b *Bot) textToSpeech(guildID snowflake.ID, user discord.Member, text string, responseFunc func(embed discord.Embed)) {
+	var embed discord.EmbedBuilder
+	embed.SetColor(16705372)
+	voiceState, ok := b.Client.Caches().VoiceState(guildID, user.User.ID)
+	if !ok || voiceState.ChannelID == nil {
+		embed.SetDescription("Please join a VoiceChannel to use this command")
+		responseFunc(embed.Build())
+		return
+	}
+	botVoiceState, ok := b.Client.Caches().VoiceState(guildID, b.Client.ID())
+	if ok && botVoiceState.ChannelID != nil && botVoiceState.ChannelID.String() != voiceState.ChannelID.String() {
+		embed.SetDescription("Bot was already in other channel")
+		responseFunc(embed.Build())
+		return
+	}
+
+	queue := b.Guilds.GetQueue(guildID)
+	player := b.Lavalink.Player(guildID)
+	_ = player.Update(context.TODO(), lavalink.WithVolume(100))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	loadBitsResult, err := b.Lavalink.BestNode().LoadTracks(ctx, "https://files.loukhin.com/bits.ogg")
+	if err != nil {
+		log.Error(err)
+	}
+	bitsTracks := loadBitsResult.Data.(lavalink.Track)
+
+	fttsUrl := &url.URL{
+		Scheme: "ftts",
+		Host:   text,
+	}
+	loadResult, err := b.Lavalink.BestNode().LoadTracks(ctx, fttsUrl.String())
+	if err != nil {
+		log.Error(err)
+	}
+	track := loadResult.Data.(lavalink.Track)
+
+	queue.Add(bitsTracks, track)
 
 	if player.Track() == nil {
 		if track, ok := queue.Next(); ok {

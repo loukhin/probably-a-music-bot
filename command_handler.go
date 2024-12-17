@@ -204,6 +204,17 @@ func (b *Bot) play(event *events.ApplicationCommandInteractionCreate, data disco
 	return err
 }
 
+func (b *Bot) tts(event *events.ApplicationCommandInteractionCreate, data discord.SlashCommandInteractionData) error {
+	text := data.String("text")
+
+	var err error
+	b.textToSpeech(*event.GuildID(), event.Member().Member, text, func(embed discord.Embed) {
+		_, err = event.Client().Rest().UpdateInteractionResponse(event.ApplicationID(), event.Token(), discord.NewMessageUpdateBuilder().SetEmbeds(embed).Build())
+		b.updatePlayerMessage(*event.GuildID())
+	})
+	return err
+}
+
 func (b *Bot) setup(event *events.ApplicationCommandInteractionCreate, _ discord.SlashCommandInteractionData) error {
 	if ok := b.createPlayerMessage(*event.GuildID(), event.ChannelID()); ok {
 		return updateInteractionResponse(event, "Player created")
