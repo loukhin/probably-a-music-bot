@@ -1,4 +1,4 @@
-FROM golang:1.23.4-alpine3.17 as builder
+FROM golang:1.23.4-alpine3.21 as builder
 
 WORKDIR /opt/probably-music-bot
 
