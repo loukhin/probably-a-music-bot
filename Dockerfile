@@ -7,9 +7,7 @@ COPY . .
 RUN go build -o probably-music-bot
 
 
-FROM alpine:3.17
-
-ENV DEBUG=TRUE
+FROM alpine:3.21
 
 RUN apk add dumb-init
 
