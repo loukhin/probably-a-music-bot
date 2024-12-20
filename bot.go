@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
@@ -201,7 +202,7 @@ func (b *Bot) playOrQueue(guildID snowflake.ID, user discord.Member, query strin
 	responseFunc(embed.Build())
 }
 
-func (b *Bot) textToSpeech(guildID snowflake.ID, user discord.Member, text string, responseFunc func(embed discord.Embed)) {
+func (b *Bot) textToSpeech(guildID snowflake.ID, user discord.Member, text string, bitsAmount int, responseFunc func(embed discord.Embed)) {
 	var embed discord.EmbedBuilder
 	embed.SetColor(16705372)
 	voiceState, ok := b.Client.Caches().VoiceState(guildID, user.User.ID)
@@ -224,23 +225,69 @@ func (b *Bot) textToSpeech(guildID snowflake.ID, user discord.Member, text strin
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	loadBitsResult, err := b.Lavalink.BestNode().LoadTracks(ctx, "https://files.loukhin.com/bits.ogg")
-	if err != nil {
-		log.Error(err)
+	if bitsAmount != 0 {
+		text = fmt.Sprintf("%d bits / / / / %s", bitsAmount, text)
+		loadBitsResult, err := b.Lavalink.BestNode().LoadTracks(ctx, "https://files.loukhin.com/bits.ogg")
+		if err != nil {
+			log.Error(err)
+		}
+		bitsTracks := loadBitsResult.Data.(lavalink.Track)
+		queue.Add(bitsTracks)
 	}
-	bitsTracks := loadBitsResult.Data.(lavalink.Track)
 
-	fttsUrl := &url.URL{
-		Scheme: "ftts",
-		Host:   text,
+	type Input struct {
+		Text string `json:"text"`
 	}
-	loadResult, err := b.Lavalink.BestNode().LoadTracks(ctx, fttsUrl.String())
+
+	type Voice struct {
+		LanguageCode string `json:"languageCode"`
+		Name         string `json:"name"`
+		SsmlGender   string `json:"ssmlGender"`
+	}
+
+	type AudioConfig struct {
+		AudioEncoding string  `json:"audioEncoding"`
+		SpeakingRate  float64 `json:"speakingRate"`
+	}
+
+	type Config struct {
+		Input       Input       `json:"input"`
+		Voice       Voice       `json:"voice"`
+		AudioConfig AudioConfig `json:"audioConfig"`
+	}
+
+	jsonStr, _ := json.Marshal(&Config{
+		Input: Input{
+			Text: fmt.Sprintf("%s / / / /", text), // add padding to prevent cutoff?
+		},
+		Voice: Voice{
+			LanguageCode: "th-TH",
+			Name:         "th-TH-Neural2-C",
+		},
+		AudioConfig: AudioConfig{
+			AudioEncoding: "OGG_OPUS",
+			SpeakingRate:  0.8,
+		},
+	})
+
+	query := url.Values{}
+	query.Add("config", string(jsonStr))
+
+	ttsUrl := &url.URL{
+		Scheme:   "tts",
+		Host:     text,
+		RawQuery: query.Encode(),
+	}
+	loadResult, err := b.Lavalink.BestNode().LoadTracks(ctx, ttsUrl.String())
 	if err != nil {
 		log.Error(err)
+		embed.SetDescription("Text too long?")
+		responseFunc(embed.Build())
+		return
 	}
 	track := loadResult.Data.(lavalink.Track)
 
-	queue.Add(bitsTracks, track)
+	queue.Add(track)
 
 	if player.Track() == nil {
 		if track, ok := queue.Next(); ok {
@@ -254,6 +301,7 @@ func (b *Bot) textToSpeech(guildID snowflake.ID, user discord.Member, text strin
 			}
 		}
 	}
+	embed.SetDescription(text)
 	responseFunc(embed.Build())
 }
 

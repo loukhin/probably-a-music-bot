@@ -31,12 +31,31 @@ var commands = []discord.ApplicationCommandCreate{
 	},
 	discord.SlashCommandCreate{
 		Name:        "tts",
-		Description: "Make TTS vocie",
+		Description: "Make TTS voice",
 		Options: []discord.ApplicationCommandOption{
 			discord.ApplicationCommandOptionString{
 				Name:        "text",
 				Description: "Text for TTS to speak",
 				Required:    true,
+				MaxLength:   json.Ptr(130),
+			},
+		},
+	},
+	discord.SlashCommandCreate{
+		Name:        "bits",
+		Description: "Donate fake bits to streameringzation",
+		Options: []discord.ApplicationCommandOption{
+			discord.ApplicationCommandOptionInt{
+				Name:        "amount",
+				Description: "Amount of fake bits",
+				Required:    true,
+				MinValue:    json.Ptr(1),
+			},
+			discord.ApplicationCommandOptionString{
+				Name:        "text",
+				Description: "Donate message",
+				Required:    true,
+				MaxLength:   json.Ptr(130),
 			},
 		},
 	},

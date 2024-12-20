@@ -138,6 +138,7 @@ func main() {
 		"setup":       b.setup,
 		"remove":      b.removeQueue,
 		"tts":         b.tts,
+		"bits":        b.bits,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -165,8 +166,8 @@ func main() {
 	}
 	log.Infof("node version: %s", version)
 
-	log.Infof("example is now running. Press CTRL and C on your keyboard together to exit.")
+	log.Infof("bot is now running. Press CTRL and C on your keyboard together to exit.")
 	s := make(chan os.Signal, 1)
-	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-s
 }

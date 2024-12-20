@@ -208,7 +208,19 @@ func (b *Bot) tts(event *events.ApplicationCommandInteractionCreate, data discor
 	text := data.String("text")
 
 	var err error
-	b.textToSpeech(*event.GuildID(), event.Member().Member, text, func(embed discord.Embed) {
+	b.textToSpeech(*event.GuildID(), event.Member().Member, text, 0, func(embed discord.Embed) {
+		_, err = event.Client().Rest().UpdateInteractionResponse(event.ApplicationID(), event.Token(), discord.NewMessageUpdateBuilder().SetEmbeds(embed).Build())
+		b.updatePlayerMessage(*event.GuildID())
+	})
+	return err
+}
+
+func (b *Bot) bits(event *events.ApplicationCommandInteractionCreate, data discord.SlashCommandInteractionData) error {
+	text := data.String("text")
+	amount := data.Int("amount")
+
+	var err error
+	b.textToSpeech(*event.GuildID(), event.Member().Member, text, amount, func(embed discord.Embed) {
 		_, err = event.Client().Rest().UpdateInteractionResponse(event.ApplicationID(), event.Token(), discord.NewMessageUpdateBuilder().SetEmbeds(embed).Build())
 		b.updatePlayerMessage(*event.GuildID())
 	})
@@ -216,7 +228,7 @@ func (b *Bot) tts(event *events.ApplicationCommandInteractionCreate, data discor
 }
 
 func (b *Bot) setup(event *events.ApplicationCommandInteractionCreate, _ discord.SlashCommandInteractionData) error {
-	if ok := b.createPlayerMessage(*event.GuildID(), event.ChannelID()); ok {
+	if ok := b.createPlayerMessage(*event.GuildID(), event.Channel().ID()); ok {
 		return updateInteractionResponse(event, "Player created")
 	}
 	return updateInteractionResponse(event, "This channel was already a player!")

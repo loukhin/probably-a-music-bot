@@ -10,16 +10,16 @@ import (
 )
 
 func (b *Bot) onPlayerPause(_ disgolink.Player, event lavalink.PlayerPauseEvent) {
-	fmt.Printf("onPlayerPause: %v\n", event)
+	// fmt.Printf("onPlayerPause: %v\n", event)
 }
 
 func (b *Bot) onPlayerResume(_ disgolink.Player, event lavalink.PlayerResumeEvent) {
-	fmt.Printf("onPlayerResume: %v\n", event)
+	// fmt.Printf("onPlayerResume: %v\n", event)
 }
 
 func (b *Bot) onTrackStart(_ disgolink.Player, event lavalink.TrackStartEvent) {
 	b.updatePlayerMessage(event.GuildID())
-	fmt.Printf("onTrackStart: %v\n", event)
+	// fmt.Printf("onTrackStart: %v\n", event)
 }
 
 func (b *Bot) onTrackEnd(player disgolink.Player, event lavalink.TrackEndEvent) {
@@ -65,5 +65,5 @@ func (b *Bot) onTrackStuck(_ disgolink.Player, event lavalink.TrackStuckEvent) {
 }
 
 func (b *Bot) onWebSocketClosed(_ disgolink.Player, event lavalink.WebSocketClosedEvent) {
-	fmt.Printf("onWebSocketClosed: %v\n", event)
+	// fmt.Printf("onWebSocketClosed: %v\n", event)
 }
