@@ -273,12 +273,7 @@ func (b *Bot) textToSpeech(guildID snowflake.ID, user discord.Member, text strin
 	query := url.Values{}
 	query.Add("config", string(jsonStr))
 
-	ttsUrl := &url.URL{
-		Scheme:   "tts",
-		Host:     text,
-		RawQuery: query.Encode(),
-	}
-	loadResult, err := b.Lavalink.BestNode().LoadTracks(ctx, ttsUrl.String())
+	loadResult, err := b.Lavalink.BestNode().LoadTracks(ctx, fmt.Sprintf("tts://?%s", query.Encode()))
 	if err != nil {
 		log.Error(err)
 		embed.SetDescription("Text too long?")
