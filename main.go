@@ -111,6 +111,13 @@ func main() {
 	}
 	b.Client = client
 
+	user, err := client.Rest().GetCurrentUser("")
+	if err != nil {
+		log.Fatalf("error while getting current user: %s", err)
+		return
+	}
+	log.Infof("authenticated as %s", user.Username)
+
 	registerCommands(client)
 
 	b.Lavalink = disgolink.New(client.ApplicationID(),

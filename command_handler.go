@@ -67,7 +67,10 @@ func (b *Bot) skip(event *events.ApplicationCommandInteractionCreate, data disco
 
 	track, ok := queue.Skip(amount)
 	if !ok {
-		return updateInteractionResponse(event, "No tracks in queue")
+		player.Update(context.TODO(), lavalink.WithNullTrack())
+		b.updatePlayerMessage(*event.GuildID())
+		b.updateVoiceState(*event.GuildID(), nil)
+		return updateInteractionResponse(event, "No tracks left in queue, stopped player")
 	}
 
 	if err := player.Update(context.TODO(), lavalink.WithTrack(track)); err != nil {

@@ -67,10 +67,10 @@ func (q *Queue) Skip(amount int) (lavalink.Track, bool) {
 	if amount > len(q.Tracks) {
 		amount = len(q.Tracks)
 	}
-	var skippedTrack lavalink.Track
-	skippedTrack, q.Tracks = q.Tracks[amount-1], q.Tracks[amount:]
+	var nextTrack lavalink.Track
+	nextTrack, q.Tracks = q.Tracks[amount-1], q.Tracks[amount:]
 	q.RecalculateDuration()
-	return skippedTrack, true
+	return nextTrack, true
 }
 
 func (q *Queue) Remove(index int) (removedTrack lavalink.Track, ok bool) {
