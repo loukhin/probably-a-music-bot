@@ -22,6 +22,8 @@ import (
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/getsentry/sentry-go"
 	_ "github.com/lib/pq"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var (

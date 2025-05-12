@@ -80,6 +80,28 @@ func (b *Bot) onGuildMessageCreate(event *events.GuildMessageCreate) {
 		if event.Message.Author.Bot {
 			return
 		}
+
+		// Handle audio file attachments
+		if len(event.Message.Attachments) > 0 {
+			for _, attachment := range event.Message.Attachments {
+				// Check if the attachment is an audio file
+				if isAudioFile(*attachment.ContentType) {
+					b.playOrQueue(event.GuildID, *event.Message.Member, attachment.URL, func(embed discord.Embed) {
+						messageCreate := discord.NewMessageCreateBuilder()
+						messageCreate.SetMessageReference(event.Message.MessageReference)
+						messageCreate.SetEmbeds(embed)
+						_, err := event.Client().Rest().CreateMessage(event.ChannelID, messageCreate.Build())
+						if err != nil {
+							log.Error(err)
+						}
+						b.updatePlayerMessage(event.GuildID)
+					})
+					return // Only process the first audio file
+				}
+			}
+		}
+
+		// Handle regular text messages
 		if guildPlayer.messageID != nil {
 			b.playOrQueue(event.GuildID, *event.Message.Member, event.Message.Content, func(embed discord.Embed) {
 				messageCreate := discord.NewMessageCreateBuilder()
@@ -93,6 +115,22 @@ func (b *Bot) onGuildMessageCreate(event *events.GuildMessageCreate) {
 			})
 		}
 	}
+}
+
+// isAudioFile checks if the given content type is an audio file
+func isAudioFile(contentType string) bool {
+	audioTypes := map[string]bool{
+		"audio/mpeg":      true,
+		"audio/mp4":       true,
+		"audio/ogg":       true,
+		"audio/wav":       true,
+		"audio/webm":      true,
+		"audio/x-m4a":     true,
+		"audio/x-ms-wma":  true,
+		"audio/x-wav":     true,
+		"application/ogg": true,
+	}
+	return audioTypes[contentType]
 }
 
 func (b *Bot) onGuildMessageUpdate(event *events.GuildMessageUpdate) {

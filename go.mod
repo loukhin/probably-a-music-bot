@@ -2,7 +2,7 @@ module github.com/loukhin/probably-a-music-bot
 
 go 1.23.0
 
-toolchain go1.23.4
+toolchain go1.24.3
 
 require (
 	entgo.io/ent v0.14.1
@@ -12,6 +12,7 @@ require (
 	github.com/disgoorg/log v1.2.1
 	github.com/disgoorg/snowflake/v2 v2.0.3
 	github.com/getsentry/sentry-go v0.18.0
+	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.7
 )
 
@@ -28,9 +29,7 @@ require (
 	github.com/sasha-s/go-csync v0.0.0-20240107134140-fcbab37b09ad // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
-	golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0 // indirect
 	golang.org/x/mod v0.20.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 )
